@@ -1,0 +1,88 @@
+---
+title: "Definitive Orthologs in NDD: Pblast alignment by ensembl rest api."
+author: "Sofia Gamino"
+date: "2025-02-25"
+output: html_document
+---
+
+# Purpose
+
+The pursose of this script is to be able to retrieve the similarity percentage between human and c.elegans proteins from genes involved in Neurodevelopmental disorders. 
+
+# Methods
+
+This will be made following a list of steps:
+1. Input the list of genes to analyze and the ortholist.
+2. Compare the orthologs first by the ensembl API and ortholist, and retrieve the source and target percentages of identity of proteins (perc_id)
+3. Take the genes from the list of genes to analyze and perform pblast alignment. This will be made using the wormbase database.
+4. Make an average between the percentage found in ensembl and pblast.
+5. Joining all the data in a data set.
+
+> Input: A list of genes to analyze, and a list with all the confirmed orthologs by ortholist
+> Output: The list of genes to analyze in a dataset, but with the homology precentage measured by two tools: ensembl homology API and pblast
+
+______________________________________________________________________________________________________________________________________________
+
+## Loading of data sets
+
+```{r}
+rm(list = ls())
+
+# Set the directory to wherever you have your csvs
+setwd("~/Downloads")
+
+# This is a vector that contains the genes to analyze
+NDD_genes_definitive <- read.csv("c.elegans/Definitive_NDD.csv")
+
+# This is a data set that contains all the orthologs between c.elegans and humans.
+Celegans_human_ortholist <- read.csv("c.elegans/Orthologs_celegans_human.csv")
+Celegans_human_ortholist$ID <- seq_len(nrow((Celegans_human_ortholist)))
+```
+
+
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyr)
+
+fetch_endpoint <- function(server, request, content_type){
+  r <- GET(paste(server, request, sep = ""), accept(content_type))
+  
+  stop_for_status(r)
+  
+  if(headers(r)["X-RateLimit-Remaining"] < 50000){
+    Sys.sleep(1)
+  }
+  
+  if (content_type == "application/json"){
+    return(fromJSON(content(r, "text",encoding = "UTF-8")))
+  } else {
+    return(content(r, "text", encoding = "UTF-8"))
+  }
+}
+
+server_ensembl <- "http://rest.ensembl.org/"
+ext_homology_symbol <- "homology/symbol/homo_sapiens/"
+con_type_homology <- "application/json"
+
+perc_ids <- c()
+
+for (gene in NDD_genes_definitive$Human_Genes) {
+  
+  query_homology <- paste(ext_homology_symbol, gene, "?", "target_species=Caenorhabditis_elegans;", "type=orthologues;", sep = "" )
+  query_homology_get <- tryCatch(expr = fetch_endpoint(server_ensembl, query_homology, con_type_homology), 
+                                 error = function(e) {return("Error en la consulta")})
+
+  if (query_homology_get == "Error en la consulta"){
+    perc_ids <- c(perc_ids, "Error en la consulta del gen")
+  } else {
+    orthologs <- query_homology_get$data$homologies
+    for ( ortholog in orthologs) {
+      perc_ids <- c(perc_ids, paste(query_homology_get$data$id, ":", gene, ":", ortholog$source$id,":", ortholog$source$perc_id, ":", ortholog$target$id, ":", ortholog$target$perc_id , sep = "")) 
+    }
+  } 
+}
+
+perc_ids <- as.data.frame(perc_ids)
+perc_ids_source_split <- separate(perc_ids, perc_ids, into = c("Gene_id", "Gene_symbol", "Ortholog_source_id", "Perc_id_source", "Ortholog_target_id", "Perc_id_target"), sep = ":")
+```

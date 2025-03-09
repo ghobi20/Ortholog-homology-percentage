@@ -1,0 +1,143 @@
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Este es un archivo que contiene los genes ortólogos entre humanos y c.elegans, los cuales están involucrados con paneles de desordenes del neurodesarrollo según el artículo "2022_Riggs-Clinical validity assessment of genes frequently tested on intellectual disability_autism sequencing panels_AOP" <https://drive.google.com/file/d/1L0YdwklXpbaJmsmyk0jOElUR80Gfrt9Y/view>
+
+Estos genes en específico pertenecen a la clasificación Definitiva.
+
+Los genes humanos que no cuentan con más información que su nombre no tienen un ortólogo en c.elegans.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+ADNP
+@{Wormbase_ID=WBGene00011064; C_gene=adsl-1; H_gene=ADSL; NIH_ID=ENSG00000239900; PBLAST_ALIGNMENT= 51%;}
+AFF2
+@{Wormbase_ID=WBGene00000113; C_gene=alh-7; H_gene=ALDH5A1; NIH_ID=ENSG00000112294; PBLAST_ALIGNMENT=50-55%; SCORE=441}
+@{Wormbase_ID=WBGene00006780; C_gene=unc-44; H_gene=ANK2; NIH_ID=ENSG00000145362}
+ANKRD11
+@{Wormbase_ID=WBGene00000159; C_gene=aps-1; H_gene=AP1S2; NIH_ID=ENSG00000182287}
+AP4B1
+@{Wormbase_ID=WBGene00000158; C_gene=apg-1; H_gene=AP4E1; NIH_ID=ENSG00000081014}
+AP4M1
+@{Wormbase_ID=WBGene00002717; C_gene=let-526; H_gene=ARID1A; NIH_ID=ENSG00000117713}
+@{Wormbase_ID=WBGene00002717; C_gene=let-526; H_gene=ARID1B; NIH_ID=ENSG00000049618}
+@{Wormbase_ID=WBGene00000433; C_gene=ceh-8; H_gene=ARX; NIH_ID=ENSG00000004848}
+@{Wormbase_ID=WBGene00000440; C_gene=ceh-17; H_gene=ARX; NIH_ID=ENSG00000004848}
+@{Wormbase_ID=WBGene00006744; C_gene=unc-4; H_gene=ARX; NIH_ID=ENSG00000004848}
+ASXL1
+ASXL2
+@{Wormbase_ID=WBGene00010993; C_gene=vha-20; H_gene=ATP6AP2; NIH_ID=ENSG00000182220}
+@{Wormbase_ID=WBGene00000834; C_gene=cua-1; H_gene=ATP7A; NIH_ID=ENSG00000165240}
+@{Wormbase_ID=WBGene00006961; C_gene=xnp-1; H_gene=ATRX; NIH_ID=ENSG00000085224}
+AUTS2
+BC11A
+BRSD2
+BRWD3
+@{Wormbase_ID=WBGene00002991; C_gene=lin-2; H_gene=CASK; NIH_ID=ENSG00000147044}
+CC2D1A
+@{Wormbase_ID=WBGene00007053; C_gene=chd-7; H_gene=CHD8; NIH_ID=ENSG00000100888}
+@{Wormbase_ID=WBGene00000532; C_gene=clh-5; H_gene=CLCN4; NIH_ID=ENSG00000073464}
+@{Wormbase_ID=WBGene00000564; C_gene=cnk-1; H_gene=CNKSR2; NIH_ID=ENSG00000149970}
+CRADD
+@{Wormbase_ID=WBGene00000366; C_gene=cbp-1; H_gene=CREBBP; NIH_ID=ENSG00000005339}
+CTCF
+@{Wormbase_ID=WBGene00001979; C_gene=hmp-2; H_gene=CTNNB1; NIH_ID=ENSG00000168036}
+@{Wormbase_ID=WBGene00000838; C_gene=cul-3; H_gene=CUL3; NIH_ID=ENSG00000036257}
+@{Wormbase_ID=WBGene00000839; C_gene=cul-4; H_gene=CUL4B; NIH_ID=ENSG00000158290}
+@{Wormbase_ID=WBGene00002244; C_gene=laf-1; H_gene=DDX3X; NIH_ID=ENSG00000215301}
+@{Wormbase_ID=WBGene00006888; C_gene=vbh-1; H_gene=DDX3X; NIH_ID=ENSG00000215301}
+@{Wormbase_ID=WBGene00007126; C_gene=dhcr-7; H_gene=DHCR7; NIH_ID=ENSG00000172893}
+DKC1
+@{Wormbase_ID=WBGene00001006; C_gene=dlg-1; H_gene=DLG3; NIH_ID=ENSG00000082458}
+@{Wormbase_ID=WBGene00003149; C_gene=mbk-1; H_gene=DYRK1A; NIH_ID=ENSG00000157540}
+EHMT1
+@{Wormbase_ID=WBGene00001366; C_gene=exc-5; H_gene=FGD1; NIH_ID=ENSG00000102302}
+FLNA
+FMR1
+FOLR1
+@{Wormbase_ID=WBGene00001439; C_gene=fkh-7; H_gene=FOXP1; NIH_ID=ENSG00000114861}
+@{Wormbase_ID=WBGene00001439; C_gene=fkh-7; H_gene=FOXP2; NIH_ID=ENSG00000128573}
+@{Wormbase_ID=WBGene00001648; C_gene=goa-1; H_gene=GNAI1; NIH_ID=ENSG00000127955}
+@{Wormbase_ID=WBGene00001666; C_gene=gpa-4; H_gene=GNAI1; NIH_ID=ENSG00000127955}
+@{Wormbase_ID=WBGene00001678; C_gene=gpa-16; H_gene=GNAI1; NIH_ID=ENSG00000127955}
+@{Wormbase_ID=WBGene00001687; C_gene=gpn-1; H_gene=GPC3; NIH_ID=ENSG00000147257}
+@{Wormbase_ID=WBGene00001612; C_gene=glr-1; H_gene=GRIA3; NIH_ID=ENSG00000125675}
+@{Wormbase_ID=WBGene00001613; C_gene=glr-2; H_gene=GRIA3; NIH_ID=ENSG00000125675}
+@{Wormbase_ID=WBGene00001614; C_gene=glr-3; H_gene=GRIA3; NIH_ID=ENSG00000125675}
+@{Wormbase_ID=WBGene00001615; C_gene=glr-4; H_gene=GRIA3; NIH_ID=ENSG00000125675}
+@{Wormbase_ID=WBGene00001616; C_gene=glr-5; H_gene=GRIA3; NIH_ID=ENSG00000125675}
+@{Wormbase_ID=WBGene00001827; C_gene=hcf-1; H_gene=HCFC1; NIH_ID=ENSG00000172534}
+@{Wormbase_ID=WBGene00000437; C_gene=ceh-13; H_gene=HOXA1; NIH_ID=ENSG00000105991}
+HPRT1
+HUWE1
+IDS
+IL1RAPL1
+IQSEC2
+@{Wormbase_ID=WBGene00004319; C_gene=rbr-2; H_gene=KDM5C; NIH_ID=ENSG00000126012}
+@{Wormbase_ID=WBGene00002217; C_gene=klp-4; H_gene=KIF1A; NIH_ID=ENSG00000130294}
+@{Wormbase_ID=WBGene00006831; C_gene=unc-104; H_gene=KIF1A; NIH_ID=ENSG00000130294}
+@{Wormbase_ID=WBGene00002243; C_gene=lad-2; H_gene=L1CAM; NIH_ID=ENSG00000198910}
+@{Wormbase_ID=WBGene00004732; C_gene=sax-7; H_gene=L1CAM; NIH_ID=ENSG00000198910}
+@{Wormbase_ID=WBGene00008258; C_gene=mans-2; H_gene=MAN1B1; NIH_ID=ENSG00000177239}
+@{Wormbase_ID=WBGene00008411; C_gene=mans-1; H_gene=MAN1B1; NIH_ID=ENSG00000177239}
+MAOA
+MBTPS2
+@{Wormbase_ID=WBGene00001081; C_gene=dpy-22; H_gene=MED12; NIH_ID=ENSG00000184634}
+@{Wormbase_ID=WBGene00002295; C_gene=let-19; H_gene=MED13L; NIH_ID=ENSG00000123066}
+@{Wormbase_ID=WBGene00003182; C_gene=mef-2; H_gene=MEF2C; NIH_ID=ENSG00000081189}
+MID1
+@{Wormbase_ID=WBGene00009939; C_gene=ztf-11; H_gene=MYT1L; NIH_ID=ENSG00000186487}
+@{Wormbase_ID=WBGene00000923; C_gene=daf-31; H_gene=NAA10; NIH_ID=ENSG00000102030}
+@{Wormbase_ID=WBGene00004760; C_gene=sel-2; H_gene=NBEA; NIH_ID=ENSG00000172915}
+NDP
+NEXMIF
+NHS
+@{Wormbase_ID=WBGene00004166; C_gene=pqn-85; H_gene=NIPBL; NIH_ID=ENSG00000164190}
+@{Wormbase_ID=WBGene00006412; C_gene=nlg-1; H_gene=NLGN4X; NIH_ID=ENSG00000146938}
+@{Wormbase_ID=WBGene00003605; C_gene=nhr-6; H_gene=NR4A2; NIH_ID=ENSG00000153234}
+@{Wormbase_ID=WBGene00004786; C_gene=sex-1; H_gene=NR4A2; NIH_ID=ENSG00000153234}
+@{Wormbase_ID=WBGene00007799; C_gene=nrx-1; H_gene=NRXN1; NIH_ID=ENSG00000179915}
+NSD1
+@{Wormbase_ID=WBGene00007620; C_gene=ocrl-1; H_gene=OCRL; NIH_ID=ENSG00000122126}
+OFD1
+PACS1
+@{Wormbase_ID=WBGene00003911; C_gene=pak-1; H_gene=PAK3; NIH_ID=ENSG00000077264}
+PHF6
+@{Wormbase_ID=WBGene00005013; C_gene=jmjd-1.1; H_gene=PHF8; NIH_ID=ENSG00000172943}
+PLP1
+@{Wormbase_ID=WBGene00009508; C_gene=row-1; H_gene=POGZ; NIH_ID=ENSG00000143442}
+@{Wormbase_ID=WBGene00003394; C_gene=mom-1; H_gene=PORCN; NIH_ID=ENSG00000102312}
+PQBP1
+@{Wormbase_ID=WBGene00000902; C_gene=daf-6; H_gene=PTCHD1; NIH_ID=ENSG00000165186}
+@{Wormbase_ID=WBGene00004217; C_gene=ptr-2; H_gene=PTCHD1; NIH_ID=ENSG00000165186}
+@{Wormbase_ID=WBGene00004224; C_gene=ptr-10; H_gene=PTCHD1; NIH_ID=ENSG00000165186}
+@{Wormbase_ID=WBGene00004231; C_gene=ptr-17; H_gene=PTCHD1; NIH_ID=ENSG00000165186}
+@{Wormbase_ID=WBGene00004233; C_gene=ptr-19; H_gene=PTCHD1; NIH_ID=ENSG00000165186}
+@{Wormbase_ID=WBGene00004286; C_gene=rab-39; H_gene=RAB39B; NIH_ID=ENSG00000155961}
+@{Wormbase_ID=WBGene00000591; C_gene=coh-1; H_gene=RAD21; NIH_ID=ENSG00000164754}
+@{Wormbase_ID=WBGene00004737; C_gene=scc-1; H_gene=RAD21; NIH_ID=ENSG00000164754}
+RAI1
+@{Wormbase_ID=WBGene00011352; C_gene=rskn-1; H_gene=RPS6KA3; NIH_ID=ENSG00000177189}
+SATB2
+@{Wormbase_ID=WBGene00003040; C_gene=lin-59; H_gene=SETBP1; NIH_ID=ENSG00000152217}
+@{Wormbase_ID=WBGene00006444; C_gene=shn-1; H_gene=SHANK2; NIH_ID=ENSG00000162105}
+@{Wormbase_ID=WBGene00006444; C_gene=shn-1; H_gene=SHANK3; NIH_ID=ENSG00000283243}
+@{Wormbase_ID=WBGene00006444; C_gene=shn-1; H_gene=SHANK3; NIH_ID=ENSG00000251322}
+SLC16A2
+SLC2A1
+@{Wormbase_ID=WBGene00004204; C_gene=swsn-4; H_gene=SMARCA2; NIH_ID=ENSG00000080503}
+@{Wormbase_ID=WBGene00004204; C_gene=swsn-4; H_gene=SMARCA4; NIH_ID=ENSG00000127616}
+@{Wormbase_ID=WBGene00001860; C_gene=him-1; H_gene=SMC1A; NIH_ID=ENSG00000072501}
+@{Wormbase_ID=WBGene00004873; C_gene=smc-3; H_gene=SMC3; NIH_ID=ENSG00000108055}
+SMS
+@{Wormbase_ID=WBGene00002201; C_gene=kin-18; H_gene=TAOK1; NIH_ID=ENSG00000160551}
+TBL1XR1
+@{Wormbase_ID=WBGene00006545; C_gene=tbx-8; H_gene=TBR1; NIH_ID=ENSG00000136535}
+@{Wormbase_ID=WBGene00006546; C_gene=tbx-9; H_gene=TBR1; NIH_ID=ENSG00000136535}
+@{Wormbase_ID=WBGene00006547; C_gene=tbx-11; H_gene=TBR1; NIH_ID=ENSG00000136535}
+TNRC6B
+@{Wormbase_ID=WBGene00007956; C_gene=trpp-9; H_gene=TRAPPC9; NIH_ID=ENSG00000167632}
+TUSC3
+@{Wormbase_ID=WBGene00006701; C_gene=ubc-1; H_gene=UBE2A; NIH_ID=ENSG00000077721}
+@{Wormbase_ID=WBGene00004882; C_gene=smg-4; H_gene=UPF3B; NIH_ID=ENSG00000125351}
+VPS13B
+ZC4H2
+@{Wormbase_ID=WBGene00012948; C_gene=dhhc-2; H_gene=ZDHHC9; NIH_ID=ENSG00000188706}
+@{Wormbase_ID=WBGene00006970; C_gene=zag-1; H_gene=ZEB2; NIH_ID=ENSG00000169554}
+ZNF292

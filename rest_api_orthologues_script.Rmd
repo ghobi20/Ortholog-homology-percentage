@@ -29,14 +29,16 @@ ________________________________________________________________________________
 rm(list = ls())
 
 # Set the directory to wherever you have your csvs
-setwd("~/Downloads")
+setwd("~/Downloads/c.elegans/Ortholog-homology-percentage")
 
-# This is a vector that contains the genes to analyze
-NDD_genes_definitive <- read.csv("c.elegans/Definitive_NDD.csv")
+# This is a vector that contains the genes to analyze if we want to do it by symbol
+NDD_genes_definitive <- unlist(read.csv("Definitive_NDD.csv"))
 
 # This is a data set that contains all the orthologs between c.elegans and humans.
-Celegans_human_ortholist <- read.csv("c.elegans/Orthologs_celegans_human.csv")
-Celegans_human_ortholist$ID <- seq_len(nrow((Celegans_human_ortholist)))
+Celegans_human_ortholist <- read.csv("ortholist_master.csv")
+
+# This is a vector that contains the genes to analyze if we want to do it by ensembl id. It also filters the list of genes to the ones in ortholist.
+NDD_genes_id_DEFINITIVE <- unique(subset(Celegans_human_ortholist, HGNC.Symbol %in% NDD_genes_definitive, select = Ensembl.ID))
 ```
 
 
@@ -62,19 +64,19 @@ fetch_endpoint <- function(server, request, content_type){
 }
 
 server_ensembl <- "http://rest.ensembl.org/"
-ext_homology_symbol <- "homology/symbol/homo_sapiens/"
+ext_homology_symbol <- "homology/id/homo_sapiens/"
 con_type_homology <- "application/json"
 
 perc_ids <- c()
 
-for (gene in NDD_genes_definitive$Human_Genes) {
+for (gene in NDD_genes_id_DEFINITIVE$Ensembl.ID) {
   
   query_homology <- paste(ext_homology_symbol, gene, "?", "target_species=Caenorhabditis_elegans;", "type=orthologues;", sep = "" )
   query_homology_get <- tryCatch(expr = fetch_endpoint(server_ensembl, query_homology, con_type_homology), 
                                  error = function(e) {return("Error en la consulta")})
 
   if (query_homology_get == "Error en la consulta"){
-    perc_ids <- c(perc_ids, "Error en la consulta del gen")
+    perc_ids <- c(perc_ids, paste("Error en la consulta del gen ", gene, sep = ""))
   } else {
     orthologs <- query_homology_get$data$homologies
     for ( ortholog in orthologs) {

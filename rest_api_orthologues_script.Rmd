@@ -37,8 +37,8 @@ NDD_genes_definitive <- unlist(read.csv("Definitive_NDD.csv"))
 # This is a data set that contains all the orthologs between c.elegans and humans.
 Celegans_human_ortholist <- read.csv("ortholist_master.csv")
 
-# This is a vector that contains the genes to analyze if we want to do it by ensembl id. It also filters the list of genes to the ones in ortholist.
-NDD_genes_id_DEFINITIVE <- unique(subset(Celegans_human_ortholist, HGNC.Symbol %in% NDD_genes_definitive, select = Ensembl.ID))
+# This is a vector that contains the genes to analyze if we want to do it by ensembl id. It also filters the list of genes to the ones in ortholist and removes repeats.
+NDD_genes_human_id_DEFINITIVE_unique <- unique(subset(Celegans_human_ortholist, HGNC.Symbol %in% NDD_genes_definitive, select = Ensembl.ID))
 ```
 
 
@@ -47,15 +47,18 @@ library(httr)
 library(jsonlite)
 library(tidyr)
 
+# Cargamos la función helper que hace el link del endpoint y lo consulta.
 fetch_endpoint <- function(server, request, content_type){
   r <- GET(paste(server, request, sep = ""), accept(content_type))
   
   stop_for_status(r)
   
+  # Este if funciona para no pasar el límite de querys de ensembl rest api.
   if(headers(r)["X-RateLimit-Remaining"] < 50000){
     Sys.sleep(1)
   }
   
+  #Aquí devolvemos el JSON del link que se hizo en la variable r.
   if (content_type == "application/json"){
     return(fromJSON(content(r, "text",encoding = "UTF-8")))
   } else {
@@ -64,12 +67,15 @@ fetch_endpoint <- function(server, request, content_type){
 }
 
 server_ensembl <- "http://rest.ensembl.org/"
+#Este endpoint es aquel en donde se puede checar la homología a partir del enesembl id.
 ext_homology_symbol <- "homology/id/homo_sapiens/"
 con_type_homology <- "application/json"
 
+#Este vector contendrá el id del gen, el id del gen de origen, el objetivo y los porcentajes de identidad entre la secuencia de origen y objetivo.
 perc_ids <- c()
 
-for (gene in NDD_genes_id_DEFINITIVE$Ensembl.ID) {
+#En este for se van a extraer los datos de procentajes de identidad y también manejará errores de requests.
+for (gene in NDD_genes_human_id_DEFINITIVE_unique$Ensembl.ID) {
   
   query_homology <- paste(ext_homology_symbol, gene, "?", "target_species=Caenorhabditis_elegans;", "type=orthologues;", sep = "" )
   query_homology_get <- tryCatch(expr = fetch_endpoint(server_ensembl, query_homology, con_type_homology), 
@@ -80,11 +86,31 @@ for (gene in NDD_genes_id_DEFINITIVE$Ensembl.ID) {
   } else {
     orthologs <- query_homology_get$data$homologies
     for ( ortholog in orthologs) {
-      perc_ids <- c(perc_ids, paste(query_homology_get$data$id, ":", gene, ":", ortholog$source$id,":", ortholog$source$perc_id, ":", ortholog$target$id, ":", ortholog$target$perc_id , sep = "")) 
+      ids_combination <- which(Celegans_human_ortholist$Ensembl.ID == gene & Celegans_human_ortholist$WormBase.ID == ortholog$target$id) # This command allow us to know if the found ortholog is already noted in the original ortholist database
+      if (length(ids_combination) > 0){
+        match_ids = "Known"
+      } else {
+        match_ids = "Not Known"
+      }
+      perc_ids <- c(perc_ids, paste(query_homology_get$data$id, ":", ortholog$source$id,":", ortholog$source$perc_id, ":", ortholog$target$id, ":", ortholog$target$perc_id , ":", match_ids, sep = "")) 
     }
   } 
 }
 
 perc_ids <- as.data.frame(perc_ids)
-perc_ids_source_split <- separate(perc_ids, perc_ids, into = c("Gene_id", "Gene_symbol", "Ortholog_source_id", "Perc_id_source", "Ortholog_target_id", "Perc_id_target"), sep = ":")
+#Aquí ya tenemos un data frame con los porcentajes de identidad y ids.
+perc_ids_df <- separate(perc_ids, perc_ids, into = c("Gene_id", "Ortholog_source_id", "Perc_id_source", "Ortholog_target_id", "Perc_id_target", "Match_ids"), sep = ":")
 ```
+
+
+Now we will use the database of WormBase ParaSite and its endpoints to retrieve the identity percentages and the compare them with the other values.
+
+```{r}
+#Primero tomaremos todos los ortólogos reconocidos por ortholist.
+NDD_genes_id_DEFINITIVE <- subset(Celegans_human_ortholist, HGNC.Symbol %in% NDD_genes_definitive, select = c(Ensembl.ID, HGNC.Symbol, WormBase.ID, Common.Name))
+
+```
+
+Ahora añadiremos los porcentajes de identidad pero haciendo uso de BLASTp.
+En la busqueda anetrior, solo introducimos los genes que sabemos que tienen algún ortólogo reconocido en elegans para hacer la busqueda de homología. Esta vez, usaremos la base de datos de ortholist para ver todos los ortólogos de cada gen de interés.
+Para eso, tomaremos en formato fasta las secuencias del gen humano y el ortologo en c.elegans, y así comprobaremos el porcentaje de identidad de manera reciproca.

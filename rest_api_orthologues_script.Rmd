@@ -116,7 +116,7 @@ library(rBLAST)
 
 # Paso 1: Crear una base de datos de blast con la anotación de todas las proteínas de c.elegans
 organism_protein_fa= "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa"
-makeblastdb(file = organism_protein_db, dbtype = "prot", verbose = FALSE) #Si quieres ver el reporte del comando, modifica verbose a TRUE
+makeblastdb(file = organism_protein_fa, dbtype = "prot", verbose = FALSE) #Si quieres ver el reporte del comando, modifica verbose a TRUE
 file.rename(from = "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa", to = "BLAST_search/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa") # Esto es para tener una carpeta solo con la db de c.elegans
 organism_protein_db = "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa"
 ```
@@ -128,7 +128,7 @@ organism_protein_db = "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA137
 # Paso 2: Llamar los fastas de las proteinas canónicas de los genes a analizar. Para esto usaremos la api de ensembl de nuevo. En este caso será un POST
 
 fetch_endpoint_POST <- function(server, request, data, content_type='application/json'){
-    r = POST(paste(server, request, sep = ""), content_type(con_type_sequence), accept("application/json"), body = data)
+    r = POST(paste(server, request, sep = ""), content_type(content_type), accept("application/json"), body = data)
 
     stop_for_status(r)
 
@@ -230,11 +230,11 @@ blast_pident_df <- separate(blast_pident, blast_pident, into = c("Gene ID", "Tra
 
 ```{r}
 # Paso 6: Comparar los porcentajes de identidad entre los precargados en ensembl y los predichos por pblast
-final_pident = c()
 
-for (i in seq_along(perc_ids_df$Gene_id)) {
+for (i in seq_along(perc_ids_df$`Gene ID`)) {
   final_df = inner_join(blast_pident_df, perc_ids_df, by = c("Gene ID", "Protein ID"))
 }
+print(final_df)
 ```
 
 

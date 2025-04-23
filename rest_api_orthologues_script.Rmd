@@ -7,16 +7,15 @@ output: html_document
 
 # Purpose
 
-The pursose of this script is to be able to retrieve the similarity percentage between human and c.elegans proteins from genes involved in Neurodevelopmental disorders. 
+The purpose of this script is to be able to retrieve the similarity percentage between human and c.elegans (or any other organism) proteins from gene IDs.
 
 # Methods
 
-This will be made following a list of steps:
+The objective is accomplished following these steps: 
 1. Input the list of genes to analyze and the ortholist.
 2. Compare the orthologs first by the ensembl API and ortholist, and retrieve the source and target percentages of identity of proteins (perc_id)
-3. Take the genes from the list of genes to analyze and perform pblast alignment. This will be made using the wormbase database.
-4. Make an average between the percentage found in ensembl and pblast.
-5. Joining all the data in a data set.
+3. Take the genes from the list of genes to analyze and perform pblast alignment. This will be made using the wormbase para-site c.elegans protein database.
+4. Join the retrieved information in a single data frame.
 
 > Input: A list of genes to analyze, and a list with all the confirmed orthologs by ortholist
 > Output: The list of genes to analyze in a dataset, but with the homology precentage measured by two tools: ensembl homology API and pblast
@@ -42,7 +41,9 @@ NDD_genes_human_id_DEFINITIVE_unique <- unique(subset(Celegans_human_ortholist, 
 ```
 
 
-```{r}
+# Extracción de los porcentajes de identidad de ensembl.
+
+```{r, warning=FALSE}
 library(httr)
 library(jsonlite)
 library(tidyr)
@@ -68,7 +69,7 @@ fetch_endpoint <- function(server, request, content_type){
 
 server_ensembl <- "http://rest.ensembl.org/"
 #Este endpoint es aquel en donde se puede checar la homología a partir del enesembl id.
-ext_homology_symbol <- "homology/id/homo_sapiens/"
+ext_homology_id <- "homology/id/homo_sapiens/"
 con_type_homology <- "application/json"
 
 #Este vector contendrá el id del gen, el id del gen de origen, el objetivo y los porcentajes de identidad entre la secuencia de origen y objetivo.
@@ -77,7 +78,7 @@ perc_ids <- c()
 #En este for se van a extraer los datos de procentajes de identidad y también manejará errores de requests.
 for (gene in NDD_genes_human_id_DEFINITIVE_unique$Ensembl.ID) {
   
-  query_homology <- paste(ext_homology_symbol, gene, "?", "target_species=Caenorhabditis_elegans;", "type=orthologues;", sep = "" )
+  query_homology <- paste(ext_homology_id, gene, "?", "target_species=Caenorhabditis_elegans;", "type=orthologues;", sep = "" )
   query_homology_get <- tryCatch(expr = fetch_endpoint(server_ensembl, query_homology, con_type_homology), 
                                  error = function(e) {return("Error en la consulta")})
 
@@ -92,25 +93,198 @@ for (gene in NDD_genes_human_id_DEFINITIVE_unique$Ensembl.ID) {
       } else {
         match_ids = "Not Known"
       }
-      perc_ids <- c(perc_ids, paste(query_homology_get$data$id, ":", ortholog$source$id,":", ortholog$source$perc_id, ":", ortholog$target$id, ":", ortholog$target$perc_id , ":", match_ids, sep = "")) 
+      perc_ids <- c(perc_ids, paste(query_homology_get$data$id, ":", ortholog$source$protein_id, ":", ortholog$source$id,":", ortholog$source$perc_id, ":", ortholog$target$id, ":", ortholog$target$perc_id , ":", match_ids, sep = "")) 
     }
   } 
 }
 
 perc_ids <- as.data.frame(perc_ids)
 #Aquí ya tenemos un data frame con los porcentajes de identidad y ids.
-perc_ids_df <- separate(perc_ids, perc_ids, into = c("Gene_id", "Ortholog_source_id", "Perc_id_source", "Ortholog_target_id", "Perc_id_target", "Match_ids"), sep = ":")
+perc_ids_df <- separate(perc_ids, perc_ids, into = c("Gene ID", "Protein ID","Ortholog source ID", "Perc ID source", "Ortholog target id", "Perc ID target", "Match IDs"), sep = ":")
 ```
 
+# Usando rblast
 
-Now we will use the database of WormBase ParaSite and its endpoints to retrieve the identity percentages and the compare them with the other values.
+Ahora añadiremos los porcentajes de identidad pero haciendo uso de BLASTp con el paquete de BioManager, rblast.
+En la busqueda anterior, solo introducimos los genes que sabemos que tienen algún ortólogo reconocido en ortholist para hacer la busqueda de homología. Esta vez, usaremos la base de datos de ortholist para ver todos los ortólogos de cada gen de interés.
+Para eso, tomaremos en formato fasta las secuencias del gen humano y el ortologo en c.elegans, y así comprobaremos el porcentaje de identidad de manera más directa.
+
+## Crear la base de datos de ensembl con la base de datos de las proteínas de c.elegans
 
 ```{r}
-#Primero tomaremos todos los ortólogos reconocidos por ortholist.
-NDD_genes_id_DEFINITIVE <- subset(Celegans_human_ortholist, HGNC.Symbol %in% NDD_genes_definitive, select = c(Ensembl.ID, HGNC.Symbol, WormBase.ID, Common.Name))
+library(rBLAST)
+
+# Paso 1: Crear una base de datos de blast con la anotación de todas las proteínas de c.elegans
+organism_protein_fa= "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa"
+makeblastdb(file = organism_protein_db, dbtype = "prot", verbose = FALSE) #Si quieres ver el reporte del comando, modifica verbose a TRUE
+file.rename(from = "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa", to = "BLAST_search/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa") # Esto es para tener una carpeta solo con la db de c.elegans
+organism_protein_db = "BLAST_search/C.elegans_db/caenorhabditis_elegans.PRJNA13758.WBPS19.protein.fa"
+```
+
+## Reconocimiento del transcrito canónico de cada gen.
+
+```{r}
+
+# Paso 2: Llamar los fastas de las proteinas canónicas de los genes a analizar. Para esto usaremos la api de ensembl de nuevo. En este caso será un POST
+
+fetch_endpoint_POST <- function(server, request, data, content_type='application/json'){
+    r = POST(paste(server, request, sep = ""), content_type(con_type_sequence), accept("application/json"), body = data)
+
+    stop_for_status(r)
+
+    if (content_type == 'application/json'){
+        return (fromJSON(content(r, "text", encoding = "UTF-8")))
+    } else {
+        return (content(r, "text", encoding = "UTF-8"))
+    }
+}
+# Paso 2.1: Primero tenemos que saber el ID del transcrito canonico de cada gen
+
+#Hice chunks porque ensembl no me permite subir listas de genes muy extensas.
+IDs = NDD_genes_human_id_DEFINITIVE_unique$Ensembl.ID
+chunk_size = 30
+num_chunks = ceiling(length(IDs)/30)
+chunk_index = rep(1:num_chunks, each = chunk_size, length.out = length(IDs))
+id_chunks = split(IDs, chunk_index)
+
+ext_lookup_id = "lookup/id"
+canonicals = c() #Aquí iran guardados los IDs de las proteinas provenientes de transcritos canónicos de cada gen en nuestra lista. 
+c_transc= c() #Aquí se guardan los IDs de los Transcritos canonicos.
+
+for (chunk in 1:num_chunks) {
+  Genes_id = toJSON(list(ids=id_chunks[[chunk]], expand = 1))
+  lookup_post_r = fetch_endpoint_POST(server_ensembl, ext_lookup_id, Genes_id, "application/json")
+  
+  for (id in lookup_post_r) {
+    is_canonical = id$Transcript$is_canonical
+    canonical = which(is_canonical == 1) #Buscamos la posición donde el transcrito es canónico
+    canonical_id = id$Transcript$Translation$id[canonical]
+    canonicals = c(canonicals, canonical_id)
+    canonical_transc = id$Transcript$id[canonical]
+    c_transc = c(c_transc, canonical_transc)
+  }
+}
+```
+
+## Extracción de las secuencias de aminoácidos canónicas
+
+```{r}
+#Paso 2.3: Ahora podemos sacar los fastas del transcrito canónico
+
+ext_sequence_id = "sequence/id"
+con_type_sequence = "application/json"
+transc_cont = 1
+
+for (chunk in 1:num_chunks) {
+  Genes_id = toJSON(list(ids=id_chunks[[chunk]], type = "protein"))
+  sequence_post_r = fetch_endpoint_POST(server_ensembl, ext_sequence_id, Genes_id, con_type_sequence)
+  
+  for (i in seq_along(sequence_post_r$query)) {
+    canonical_flag = which(canonicals == sequence_post_r$id[i])
+    if (length(canonical_flag) > 0){
+      p_seq = sequence_post_r$seq[i]
+      p_fasta = AAStringSet(p_seq)
+      names(p_fasta) = paste0(sequence_post_r$query[i], "_", sequence_post_r$id[i], "_", c_transc[transc_cont], collapse = "")
+      writeXStringSet(p_fasta, filepath = paste0("BLAST_search/Target_prot_fastas/", names(p_fasta), ".fa", collapse =""), format = "fasta")
+      transc_cont = transc_cont + 1
+    } 
+  }
+}
 
 ```
 
-Ahora añadiremos los porcentajes de identidad pero haciendo uso de BLASTp.
-En la busqueda anetrior, solo introducimos los genes que sabemos que tienen algún ortólogo reconocido en elegans para hacer la busqueda de homología. Esta vez, usaremos la base de datos de ortholist para ver todos los ortólogos de cada gen de interés.
-Para eso, tomaremos en formato fasta las secuencias del gen humano y el ortologo en c.elegans, y así comprobaremos el porcentaje de identidad de manera reciproca.
+## Hacer busqueda con pBLAST a cada fasta, y extraer el porcentaje de identidad
+
+```{r}
+library(stringr)
+
+#Paso 4: Hacer las llamadas de pblast
+
+# Paso 4.1: Cargar la base de datos del organismo objetivo (c.elegans) para su uso.
+organism_db = blast(db = organism_protein_db, type = "blastp" )
+
+#paso 4.2: Hacer una llamada por cada fasta que reclamamos, y tomar su porcetaje de identidad
+files = list.files("BLAST_search/Target_prot_fastas")
+
+blast_pident = c()
+
+for (file in files) {
+  fasta = readAAStringSet(paste0("BLAST_search/Target_prot_fastas/", file, collapse = ""))
+  pblast_result = predict(organism_db, fasta)
+  
+  pident = pblast_result$pident
+  max_pident = max(pident)
+  max_row = which(max_pident == pblast_result$pident)
+  r_name = pblast_result$qseqid[max_row]
+  r_name_split = str_split(r_name, "_")[[1]]
+  blast_pident = c(blast_pident, paste0(r_name_split[[1]], ":", r_name_split[[3]], ":", r_name_split[[2]], ":", max_pident, collapse = ""))
+}
+
+# Paso 5: Ordenar todo en un data frame.
+
+blast_pident = as.data.frame(blast_pident)
+blast_pident_df <- separate(blast_pident, blast_pident, into = c("Gene ID", "Transcript ID","Protein ID", "P. Ident"), sep = ":")
+```
+
+## Comparación entre resultados de Ortholist, Ensembl y pBLAST.
+
+```{r}
+# Paso 6: Comparar los porcentajes de identidad entre los precargados en ensembl y los predichos por pblast
+final_pident = c()
+
+for (i in seq_along(perc_ids_df$Gene_id)) {
+  final_df = inner_join(blast_pident_df, perc_ids_df, by = c("Gene ID", "Protein ID"))
+}
+```
+
+
+# Resultados
+
+## Análisis de regresión lineal
+
+Hice algunos modelos de regresión lineal para observar si los resultados del porcentaje de identidad por pblast son congruentes con los de Ensembl.
+```{r}
+final_df$`Perc ID source` <- as.numeric(final_df$`Perc ID source`)
+model_blast_ensembl_source = lm(`P. Ident` ~ `Perc ID source`, data = final_df)
+summary(model_blast_ensembl_source)
+plot(model_blast_ensembl_source)
+
+plot(final_df$`Perc ID source`, final_df$`P. Ident`, 
+     main = paste0("Relación lineal: P. Ident ~ Perc ID source"),
+     xlab = "Perc ID source", ylab = "P. Ident", pch = 1, col = "dodgerblue")
+abline(model_blast_ensembl_source, col = "red", lwd = 2)
+```
+
+Cuando se tratan de explicar los resultados de porcentajes de identidad de blast con aquellos de source de Ensembl, se ve una relación bastante débil por la R cuadrada de .12, pero un p-valor muy significativo.
+
+
+```{r}
+final_df$`Perc ID target` <- as.numeric(final_df$`Perc ID target`)
+model_blast_ensembl_target = lm(`P. Ident` ~ `Perc ID target`, data = final_df)
+summary(model_blast_ensembl_target)
+plot(model_blast_ensembl_target)
+
+plot(final_df$`Perc ID target`, final_df$`P. Ident`, 
+     main = paste0("Relación lineal: P. Ident ~ Perc ID target"),
+     xlab = "Perc ID target", ylab = "P. Ident", pch = 1, col = "slateblue")
+abline(model_blast_ensembl_target, col = "lightgreen", lwd = 2)
+```
+
+La situación con la comparación con perc_id_target también es débil (R cudarada de 0.2), aunque es más fuerte que la de source. Esto se puede explicar por que en general, los porcentajes de identidad de la prespectiva del objetivo son más altos, por la diferencia en tamaño de la proteína.
+
+```{r}
+model_blast_ensembl_source_target = lm(`P. Ident` ~ `Perc ID source` + `Perc ID target`, data = final_df)
+summary(model_blast_ensembl_source_target)
+plot(model_blast_ensembl_source_target)
+
+```
+Cuando se hace una regresión entre los resultados de pBLAST y los dos de ENSEMBL, se observa que en realidad, perc_source es muy diferente de los resultados obtenidos en pBLAST. También se puede notar que la relación con perc_id_target, aunque estadísticamente significativa, en realidad no explica mucho de la variación observada en los resultados de BLAST.
+
+Falta poner más trabajo en análisis estádisctico, pero por ahora puedo afirmar que los resultados obtenidos por ENSEMBL y pBLAST son diferentes, aunque desconozco la causa por ahora.
+
+# Limitaciones 
+
+Al momento de usar esta herramienta, hay que tener en cuenta que como se usa un paquete de R, el consumo de recursos no está muy bien optimizado y depende de la maquina donde se esté trabajando. Por ahora el programa solo funciona con fastas ligeros y algunos cientos de genes a comparar. En el futuro pienso encontrar una forma de que el programa se pueda correr dede el cluster, y así solventar estos problemas.
+Aún sigo desarrollandolo y me falta optimizarlo.
+
+
